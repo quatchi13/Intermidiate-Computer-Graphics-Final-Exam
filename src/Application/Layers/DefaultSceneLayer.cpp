@@ -364,6 +364,46 @@ void DefaultSceneLayer::_CreateScene()
 			//scene->MainCamera = cam;
 		}
 
+		// Player object
+		GameObject::Sptr player = scene->CreateGameObject("Player");
+		{
+			MeshResource::Sptr box = ResourceManager::CreateAsset<MeshResource>();
+			box->AddParam(MeshBuilderParam::CreateCube(glm::vec3(0, 0, 0.1f), ONE));
+			box->GenerateMesh();
+
+			// Set and rotation position in the scene
+			player->SetPostion(glm::vec3(0.0f, 4.5f, 2.5f));
+			player->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+
+			// Add a render component
+			RenderComponent::Sptr renderer = player->Add<RenderComponent>();
+			renderer->SetMesh(box);
+			renderer->SetMaterial(boxMaterial);
+
+			RigidBody::Sptr playerHitbox = player->Add<RigidBody>(RigidBodyType::Dynamic);
+			playerHitbox->AddCollider(BoxCollider::Create(glm::vec3(0.25f, 0.25f, 0.25f)))->SetPosition({ 0,0,0.110 });
+
+			//PlayerController::Sptr playerController = player->Add<PlayerController>();
+
+			ParticleSystem::Sptr particleManager = player->Add<ParticleSystem>();
+			particleManager->Atlas = particleTex;
+
+			particleManager->_gravity = glm::vec3(0.0f);
+
+			ParticleSystem::ParticleData emitter;
+			emitter.Type = ParticleType::SphereEmitter;
+			emitter.TexID = 3;
+			emitter.Position = glm::vec3(0.0f, 0.0f, 0.0f);
+			emitter.Color = glm::vec4(0.235f, 0.235f, 1.0f, 0.7f);
+			emitter.Lifetime = 1.0f / 50.0f;
+			emitter.SphereEmitterData.Timer = 1.0f / 50.0f;
+			emitter.SphereEmitterData.Velocity = 0.2f;
+			emitter.SphereEmitterData.LifeRange = { 1.0f, 1.0f };
+			emitter.SphereEmitterData.Radius = 0.1f;
+			emitter.SphereEmitterData.SizeRange = { 0.5f, 0.5f };
+
+			particleManager->AddEmitter(emitter);
+		}
 
 		// Set up all our sample objects
 		GameObject::Sptr plane = scene->CreateGameObject("Plane");
